@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background: #000;
+      color: #fff;
+      font-family: 'Courier Prime', 'Courier New', monospace;
+      font-size: 15px;
+      line-height: 1.65;
+      padding: 16px;
+      margin: 0;
+      word-wrap: break-word;
+    }
+    .user {
+      text-align: right;
+      color: #666;
+      margin: 16px 0;
+      padding-left: 48px;
+    }
+    .assistant {
+      text-align: left;
+      margin: 16px 0;
+      padding-right: 8px;
+    }
+    .assistant p { margin: 0 0 10px 0; }
+    .assistant p:last-child { margin-bottom: 0; }
+    .katex-display { margin: 14px 0; overflow-x: auto; }
+    .mermaid {
+      margin: 14px 0;
+      background: #090909;
+      border: 1px solid #1f1f1f;
+      padding: 12px;
+    }
+    .plot-wrap {
+      margin: 14px 0;
+      background: #090909;
+      border: 1px solid #1f1f1f;
+      padding: 4px;
+    }
+    .functionplot-data { display: none; }
+    svg { max-width: 100%; }
+    .function-plot .x.axis line,
+    .function-plot .y.axis line { stroke: #333; }
+    .function-plot .x.axis path,
+    .function-plot .y.axis path { stroke: #333; }
+    .function-plot text { fill: #555; font-family: 'Courier Prime', monospace; font-size: 11px; }
+    .error-msg { color: #ff5555; font-size: 0.9em; }
+  </style>
+</head>
+<body id="chat">
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@5/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/function-plot@1/dist/function-plot.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'dark',
+    themeVariables: {
+      background: '#000',
+      primaryColor: '#111',
+      primaryTextColor: '#fff',
+      lineColor: '#444',
+      edgeLabelBackground: '#000'
+    }
+  });
+
+  var messageQueue = [];
+  var isReady = false;
+  var plotCount = 0;
+
+  function _renderMessage(role, html) {
+    var div = document.createElement('div');
+    div.className = role;
+    div.innerHTML = html;
+    document.getElementById('chat').appendChild(div);
+
+    renderMathInElement(div, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '$', right: '$', display: false }
+      ],
+      throwOnError: false
+    });
+
+    var mermaidDivs = div.querySelectorAll('.mermaid');
+    if (mermaidDivs.length > 0) {
+      mermaid.run({ nodes: mermaidDivs });
+    }
+
+    var plotDivs = div.querySelectorAll('.functionplot-data');
+    plotDivs.forEach(function(pd) {
+      try {
+        var cfg = JSON.parse(pd.textContent.trim());
+        var plotId = 'plot-' + (++plotCount);
+        var plotDiv = document.createElement('div');
+        plotDiv.id = plotId;
+        plotDiv.className = 'plot-wrap';
+        pd.parentNode.insertBefore(plotDiv, pd);
+        cfg.target = '#' + plotId;
+        if (!cfg.width) cfg.width = Math.min(document.body.clientWidth - 32, 340);
+        if (!cfg.height) cfg.height = 180;
+        functionPlot(cfg);
+      } catch(e) {
+        pd.innerHTML = '<span class="error-msg">[Graph unavailable]</span>';
+        pd.style.display = 'block';
+      }
+    });
+
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+
+  function appendMessage(role, html) {
+    if (!isReady) {
+      messageQueue.push({ role: role, html: html });
+      return;
+    }
+    _renderMessage(role, html);
+  }
+
+  window.addEventListener('load', function() {
+    isReady = true;
+    messageQueue.forEach(function(m) { _renderMessage(m.role, m.html); });
+    messageQueue = [];
+  });
+</script>
+</body>
+</html>
