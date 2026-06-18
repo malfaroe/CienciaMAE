@@ -26,7 +26,8 @@ class GroqApiClient(private val apiKey: String) {
    ```
 7. Do not use * or _ for emphasis. Plain text only.
 8. For statistics: use LaTeX for all formulas. Use function-plot for continuous distribution curves (normal, exponential, chi-squared, t-distribution). For discrete distributions (binomial, Poisson), describe the shape in text and give the PMF formula only.
-9. No filler, no apologies. Start the explanation immediately."""
+9. Be concise. Short paragraphs, direct answers. No lengthy introductions or summaries. 3-4 paragraphs maximum unless the question genuinely requires more steps.
+10. No filler, no apologies. Start the explanation immediately."""
 
         private const val BASE_URL = "https://api.groq.com/openai/v1/chat/completions"
         private const val MODEL = "llama-3.3-70b-versatile"
