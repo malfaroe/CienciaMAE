@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
+import androidx.security.crypto.MasterKeys
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -40,22 +40,22 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@Suppress("DEPRECATION")
 private fun getApiKey(context: Context): String? = try {
-    val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
+    val alias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
     EncryptedSharedPreferences.create(
-        context, "ciencia_prefs", masterKey,
+        "ciencia_prefs", alias, context,
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     ).getString("groq_api_key", null)
 } catch (e: Exception) { null }
 
+@Suppress("DEPRECATION")
 private fun saveApiKey(context: Context, key: String) {
     try {
-        val masterKey = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
+        val alias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
         EncryptedSharedPreferences.create(
-            context, "ciencia_prefs", masterKey,
+            "ciencia_prefs", alias, context,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         ).edit().putString("groq_api_key", key).apply()
