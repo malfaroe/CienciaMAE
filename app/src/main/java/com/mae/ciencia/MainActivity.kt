@@ -62,6 +62,13 @@ private fun saveApiKey(context: Context, key: String) {
     } catch (e: Exception) { }
 }
 
+fun htmlEscape(text: String): String = text
+    .replace("&", "&amp;")
+    .replace("<", "&lt;")
+    .replace(">", "&gt;")
+    .replace("\"", "&quot;")
+    .replace("'", "&#x27;")
+
 fun processMarkdown(text: String): String {
     var result = text
 
@@ -83,7 +90,7 @@ fun processMarkdown(text: String): String {
 
 private fun injectMessage(webView: WebView?, message: Message) {
     webView ?: return
-    val html = if (message.role == "user") message.content else processMarkdown(message.content)
+    val html = if (message.role == "user") htmlEscape(message.content) else processMarkdown(message.content)
     val escaped = JSONObject.quote(html)
     webView.evaluateJavascript("appendMessage('${message.role}', $escaped)", null)
 }
@@ -150,8 +157,7 @@ fun CienciaApp() {
                 factory = { ctx ->
                     WebView(ctx).apply {
                         settings.javaScriptEnabled = true
-                        settings.domStorageEnabled = true
-                        settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                        settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
                         setBackgroundColor(Color.BLACK)
                         webViewClient = object : WebViewClient() {
                             override fun onPageFinished(view: WebView?, url: String?) {
