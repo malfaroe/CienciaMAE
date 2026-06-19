@@ -165,15 +165,13 @@
       try {
         var src = d.textContent.trim();
         if (!src) return;
-        mermaid.parse(src).then(function() {
-          d.textContent = src;
-          mermaid.run({ nodes: [d], suppressErrors: true });
-        }).catch(function() {
+        d.textContent = src;
+        mermaid.run({ nodes: [d] }).catch(function() {
           var esc = src.replace(/[<>&]/g, function(c) { return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]; });
           d.innerHTML = '<span class="error-msg">[diagram error]</span><pre style="color:#555;font-size:0.75em;white-space:pre-wrap;margin:4px 0 0">' + esc + '</pre>';
         });
       } catch(e) {
-        d.innerHTML = '<span class="error-msg">[diagram error: library not ready]</span>';
+        d.innerHTML = '<span class="error-msg">[diagram error: ' + (e.message||'') + ']</span>';
       }
     });
 
