@@ -162,15 +162,15 @@ fun CienciaApp() {
                 Text(
                     "CIENCIAMAE",
                     modifier = Modifier.weight(1f),
-                    style = TextStyle(color = ComposeColor(0xFF666666), fontFamily = mono, fontSize = 12.sp, letterSpacing = 2.sp)
+                    style = TextStyle(color = ComposeColor(0xFFFFAB40), fontFamily = mono, fontSize = 12.sp, letterSpacing = 2.sp)
                 )
                 if (messages.isNotEmpty()) {
                     TextButton(onClick = { webViewRef?.evaluateJavascript("window.scrollTo(0,0)", null) }) {
-                        Text("up", style = TextStyle(color = ComposeColor(0xFF888888), fontFamily = mono, fontSize = 12.sp))
+                        Text("up", style = TextStyle(color = ComposeColor(0xFFFFAB40), fontFamily = mono, fontSize = 12.sp))
                     }
                 }
                 TextButton(onClick = { showKeyDialog = true }) {
-                    Text("key", style = TextStyle(color = ComposeColor(0xFF444444), fontFamily = mono, fontSize = 11.sp))
+                    Text("key", style = TextStyle(color = ComposeColor(0xFFFFAB40), fontFamily = mono, fontSize = 11.sp))
                 }
             }
 
@@ -256,9 +256,9 @@ fun CienciaApp() {
                     Text(
                         if (isLoading) "..." else ">",
                         style = TextStyle(
-                            color = if (isLoading) ComposeColor(0xFF444444) else ComposeColor(0xFF888888),
+                            color = if (isLoading) ComposeColor(0xFF1A3A55) else ComposeColor(0xFF42A5F5),
                             fontFamily = mono,
-                            fontSize = 20.sp
+                            fontSize = 40.sp
                         )
                     )
                 }

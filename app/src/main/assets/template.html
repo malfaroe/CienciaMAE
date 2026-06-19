@@ -49,10 +49,14 @@
     .functionplot-data { display: none; }
     svg { max-width: 100%; }
     .function-plot .x.axis line,
-    .function-plot .y.axis line { stroke: #333; }
+    .function-plot .y.axis line       { stroke: #555; }
     .function-plot .x.axis path,
-    .function-plot .y.axis path { stroke: #333; }
-    .function-plot text { fill: #555; font-family: 'Courier Prime', monospace; font-size: 11px; }
+    .function-plot .y.axis path       { stroke: #555; }
+    .function-plot text               { fill: #bbb; font-family: 'Courier Prime', monospace; font-size: 11px; }
+    .function-plot .title             { fill: #fff; font-size: 13px; font-weight: bold; }
+    .function-plot .x.axis .tick text,
+    .function-plot .y.axis .tick text { fill: #ccc; font-size: 10px; }
+    .function-plot .graph path.line   { stroke-width: 2px; }
     .error-msg { color: #ff5555; font-size: 0.9em; }
   </style>
 </head>
@@ -79,6 +83,8 @@
   var messageQueue = [];
   var isReady = false;
   var plotCount = 0;
+  var paletteIdx = 0;
+  var PALETTE = ['#FFAB40','#4FC3F7','#81C784','#F06292','#CE93D8','#FFD54F'];
 
   // Compile a math expression string to a JS function, bypassing function-plot's parser.
   // Handles: ^ (power), pi, e, exp, sqrt, ln, log, sin, cos, tan, abs, and all Math.*
@@ -144,6 +150,7 @@
         if (cfg.data) {
           var xDom = (cfg.xAxis && cfg.xAxis.domain) || [-10, 10];
           cfg.data.forEach(function(datum) {
+            if (!datum.color) { datum.color = PALETTE[paletteIdx % PALETTE.length]; paletteIdx++; }
             if (typeof datum.fn === 'string') {
               var pts = _sampleFn(datum.fn, xDom, 300);
               if (pts) {
