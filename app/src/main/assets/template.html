@@ -99,6 +99,14 @@
       mermaid.run({ nodes: mermaidDivs });
     }
 
+    var mathScope = {
+      pi: Math.PI, PI: Math.PI,
+      e: Math.E, E: Math.E,
+      tau: 2 * Math.PI,
+      phi: (1 + Math.sqrt(5)) / 2,
+      inf: Infinity, infinity: Infinity
+    };
+
     var plotDivs = div.querySelectorAll('.functionplot-data');
     plotDivs.forEach(function(pd) {
       try {
@@ -111,6 +119,13 @@
         cfg.target = '#' + plotId;
         if (!cfg.width) cfg.width = Math.min(document.body.clientWidth - 32, 340);
         if (!cfg.height) cfg.height = 180;
+        if (cfg.data) {
+          cfg.data.forEach(function(datum) {
+            if (datum.fn !== undefined) {
+              datum.scope = Object.assign({}, mathScope, datum.scope || {});
+            }
+          });
+        }
         functionPlot(cfg);
       } catch(e) {
         pd.innerHTML = '<span class="error-msg">[graph error: ' + e.message + ']</span>';
