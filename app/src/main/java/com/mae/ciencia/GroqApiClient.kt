@@ -60,25 +60,26 @@ class GroqApiClient(private val apiKey: String) {
             .build()
 
         return try {
-            val response = client.newCall(request).execute()
-            when (response.code) {
-                200 -> {
-                    val bodyStr = response.body?.string()
-                        ?: return Result.failure(Exception("Empty response"))
-                    val json = gson.fromJson<Map<String, Any>>(
-                        bodyStr,
-                        object : TypeToken<Map<String, Any>>() {}.type
-                    )
-                    @Suppress("UNCHECKED_CAST")
-                    val choices = json["choices"] as? List<Map<String, Any>>
-                    @Suppress("UNCHECKED_CAST")
-                    val message = choices?.firstOrNull()?.get("message") as? Map<String, String>
-                    val content = message?.get("content") ?: "No response"
-                    Result.success(content)
+            client.newCall(request).execute().use { response ->
+                when (response.code) {
+                    200 -> {
+                        val bodyStr = response.body?.string()
+                            ?: return Result.failure(Exception("Empty response"))
+                        val json = gson.fromJson<Map<String, Any>>(
+                            bodyStr,
+                            object : TypeToken<Map<String, Any>>() {}.type
+                        )
+                        @Suppress("UNCHECKED_CAST")
+                        val choices = json["choices"] as? List<Map<String, Any>>
+                        @Suppress("UNCHECKED_CAST")
+                        val message = choices?.firstOrNull()?.get("message") as? Map<String, String>
+                        val content = message?.get("content") ?: "No response"
+                        Result.success(content)
+                    }
+                    401 -> Result.failure(Exception("INVALID_KEY"))
+                    429 -> Result.failure(Exception("RATE_LIMIT"))
+                    else -> Result.failure(Exception("HTTP ${response.code}"))
                 }
-                401 -> Result.failure(Exception("INVALID_KEY"))
-                429 -> Result.failure(Exception("RATE_LIMIT"))
-                else -> Result.failure(Exception("HTTP ${response.code}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
