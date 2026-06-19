@@ -58,6 +58,13 @@
     .function-plot .y.axis .tick text { fill: #ccc; font-size: 10px; }
     .function-plot .graph path.line   { stroke-width: 2px; }
     .error-msg { color: #ff5555; font-size: 0.9em; }
+    /* Fallback: inline SVG inside paragraphs uses light colors on dark bg */
+    .assistant p svg { overflow: visible; }
+    .assistant p svg line, .assistant p svg path,
+    .assistant p svg polyline { stroke: #888; fill: none; }
+    .assistant p svg rect, .assistant p svg circle,
+    .assistant p svg polygon { stroke: #888; fill: none; }
+    .assistant p svg text { fill: #ccc; font-family: 'Courier Prime', monospace; font-size: 11px; }
   </style>
 </head>
 <body id="chat">

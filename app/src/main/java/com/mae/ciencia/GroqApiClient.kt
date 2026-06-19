@@ -22,7 +22,7 @@ class GroqApiClient(private val apiKey: String) {
      B --> C[Label]
    ```
    Rules: node IDs are single letters or short words only, no spaces or special chars. Labels in square brackets. Arrows with -->. No subgraphs, no styling, no classDef.
-5. For simple geometric diagrams (triangles, vectors, axes) emit inline SVG using only: <line>, <circle>, <rect>, <polygon>, <text>.
+5. For simple geometric diagrams (triangles, vectors, axes) emit inline SVG using only: <line>, <circle>, <rect>, <polygon>, <text>. Always set stroke="#aaa" on lines and open shapes, fill="none" on closed shapes (rect/circle/polygon), fill="#ccc" on text. Never use default black — background is black.
 6. For graphing functions emit a fenced functionplot block with this exact JSON schema:
    ```functionplot
    {"title":"optional","xAxis":{"domain":[-5,5]},"yAxis":{"domain":[-5,5]},"data":[{"fn":"x^2","color":"#FFAB40"}]}
