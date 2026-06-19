@@ -195,7 +195,8 @@
         }
         functionPlot(cfg);
       } catch(e) {
-        pd.innerHTML = '<span class="error-msg">[graph error: ' + e.message + ']</span>';
+        var _m = e.message.replace(/[<>&"]/g, function(c) { return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]; });
+        pd.innerHTML = '<span class="error-msg">[graph error: ' + _m + ']</span>';
         pd.style.display = 'block';
       }
     });
