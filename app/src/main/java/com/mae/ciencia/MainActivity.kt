@@ -31,6 +31,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -301,11 +302,20 @@ private fun sendMessage(
     vm.setLoading(true)
 
     scope.launch {
-        val result = withContext(Dispatchers.IO) {
-            GroqApiClient(key).chat(vm.buildApiMessages())
+        var lastResult: Result<String> = Result.failure(Exception("RATE_LIMIT"))
+        for (attempt in 0 until 3) {
+            if (attempt > 0) {
+                vm.setError("Límite de velocidad — reintentando en 5s...")
+                delay(5000L)
+                vm.clearError()
+            }
+            lastResult = withContext(Dispatchers.IO) {
+                GroqApiClient(key).chat(vm.buildApiMessages())
+            }
+            if (lastResult.isSuccess || lastResult.exceptionOrNull()?.message != "RATE_LIMIT") break
         }
         vm.setLoading(false)
-        result.fold(
+        lastResult.fold(
             onSuccess = { content -> vm.addMessage(Message("assistant", content)) },
             onFailure = { e ->
                 when (e.message) {
@@ -313,7 +323,7 @@ private fun sendMessage(
                         vm.setError("API key invalida — toca 'key' para actualizar")
                         onInvalidKey()
                     }
-                    "RATE_LIMIT" -> vm.setError("Limite de velocidad alcanzado. Intenta de nuevo.")
+                    "RATE_LIMIT" -> vm.setError("Límite de velocidad alcanzado. Intenta de nuevo.")
                     else -> vm.setError("Sin conexion o error de red.")
                 }
             }
