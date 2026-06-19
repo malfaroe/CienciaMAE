@@ -21,7 +21,7 @@ class GroqApiClient(private val apiKey: String) {
    ```functionplot
    {"title":"optional","xAxis":{"domain":[-5,5]},"yAxis":{"domain":[-5,5]},"data":[{"fn":"x^2","color":"#FFAB40"}]}
    ```
-7. Plain text only — no * or _ for emphasis.
+7. Plain text only — no * or _ for emphasis. Use - for bullet lists, never *.
 8. For statistics: LaTeX for formulas, function-plot for continuous distributions, text+PMF for discrete.
 9. No filler, no summaries, no apologies. Start immediately."""
 
