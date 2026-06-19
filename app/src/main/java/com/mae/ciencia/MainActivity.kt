@@ -93,6 +93,12 @@ fun processMarkdown(text: String): String {
         "<div class=\"functionplot-data\">${m.groupValues[1].trim()}</div>"
     }
 
+    val svgBlocks = mutableListOf<String>()
+    result = result.replace(Regex("<svg[^>]*>[\\s\\S]*?</svg>", RegexOption.IGNORE_CASE)) { m ->
+        svgBlocks.add(m.value)
+        "SVGBLOCK${svgBlocks.size - 1}END"
+    }
+
     result = result.replace(Regex("(?m)^[*-] (.+)"), "&#8226; $1")
     result = result.replace(Regex("\\*\\*([^*\n]+)\\*\\*"), "<strong>$1</strong>")
     result = "<p>" + result.replace("\n\n", "</p><p>") + "</p>"
@@ -103,6 +109,9 @@ fun processMarkdown(text: String): String {
     }
     mermaidBlocks.forEachIndexed { idx, block ->
         result = result.replace("MERMAIDBLOCK${idx}END", block)
+    }
+    svgBlocks.forEachIndexed { idx, block ->
+        result = result.replace("SVGBLOCK${idx}END", block)
     }
 
     return result
