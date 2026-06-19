@@ -80,6 +80,30 @@
   var isReady = false;
   var plotCount = 0;
 
+  // Compile a math expression string to a JS function, bypassing function-plot's parser.
+  // Handles: ^ (power), pi, e, exp, sqrt, ln, log, sin, cos, tan, abs, and all Math.*
+  function _sampleFn(fnStr, xDomain, nPts) {
+    var decls = 'var pi=Math.PI,PI=Math.PI,e=Math.E,E=Math.E,tau=2*Math.PI,' +
+      'phi=1.6180339887,inf=Infinity,infinity=Infinity,' +
+      'exp=Math.exp,sqrt=Math.sqrt,cbrt=Math.cbrt,abs=Math.abs,' +
+      'sin=Math.sin,cos=Math.cos,tan=Math.tan,sec=function(x){return 1/Math.cos(x)},' +
+      'asin=Math.asin,acos=Math.acos,atan=Math.atan,atan2=Math.atan2,' +
+      'sinh=Math.sinh,cosh=Math.cosh,tanh=Math.tanh,' +
+      'log=Math.log10,ln=Math.log,log2=Math.log2,log10=Math.log10,' +
+      'ceil=Math.ceil,floor=Math.floor,round=Math.round,' +
+      'pow=Math.pow,sign=Math.sign,min=Math.min,max=Math.max;';
+    var jsExpr = fnStr.replace(/\^/g, '**');
+    var f;
+    try { f = new Function('x', decls + 'return (' + jsExpr + ');'); } catch(e) { return null; }
+    var x0 = xDomain[0], x1 = xDomain[1], step = (x1 - x0) / nPts;
+    var pts = [];
+    for (var i = 0; i <= nPts; i++) {
+      var x = x0 + i * step;
+      try { var y = f(x); if (isFinite(y)) pts.push([x, y]); } catch(e) {}
+    }
+    return pts.length > 1 ? pts : null;
+  }
+
   function _renderMessage(role, html) {
     var div = document.createElement('div');
     div.className = role;
@@ -105,14 +129,6 @@
       });
     }
 
-    var mathScope = {
-      pi: Math.PI, PI: Math.PI,
-      e: Math.E, E: Math.E,
-      tau: 2 * Math.PI,
-      phi: (1 + Math.sqrt(5)) / 2,
-      inf: Infinity, infinity: Infinity
-    };
-
     var plotDivs = div.querySelectorAll('.functionplot-data');
     plotDivs.forEach(function(pd) {
       try {
@@ -124,11 +140,18 @@
         pd.parentNode.insertBefore(plotDiv, pd);
         cfg.target = '#' + plotId;
         if (!cfg.width) cfg.width = Math.min(document.body.clientWidth - 32, 340);
-        if (!cfg.height) cfg.height = 180;
+        if (!cfg.height) cfg.height = 200;
         if (cfg.data) {
+          var xDom = (cfg.xAxis && cfg.xAxis.domain) || [-10, 10];
           cfg.data.forEach(function(datum) {
-            if (datum.fn !== undefined) {
-              datum.scope = Object.assign({}, mathScope, datum.scope || {});
+            if (typeof datum.fn === 'string') {
+              var pts = _sampleFn(datum.fn, xDom, 300);
+              if (pts) {
+                datum.points = pts;
+                datum.fnType = 'points';
+                datum.graphType = 'polyline';
+                delete datum.fn;
+              }
             }
           });
         }
