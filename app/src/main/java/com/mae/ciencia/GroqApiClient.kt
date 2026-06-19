@@ -15,7 +15,13 @@ class GroqApiClient(private val apiKey: String) {
 1. Be brief. Maximum 2-3 short paragraphs. Give the core idea directly. The user will ask for more if needed.
 2. Respond in the same language as the user's question (Spanish or English).
 3. Use ${'$'}...$ for inline math and ${'$'}${'$'}...${'$'}${'$'} for block equations. Always use LaTeX for any formula — never plain ASCII math.
-4. For concept maps or flows use a fenced mermaid block.
+4. For concept maps or flows use a fenced mermaid block. Use ONLY flowchart TD with simple arrow syntax. Exact format:
+   ```mermaid
+   flowchart TD
+     A[Label] --> B[Label]
+     B --> C[Label]
+   ```
+   Rules: node IDs are single letters or short words only, no spaces or special chars. Labels in square brackets. Arrows with -->. No subgraphs, no styling, no classDef.
 5. For simple geometric diagrams (triangles, vectors, axes) emit inline SVG using only: <line>, <circle>, <rect>, <polygon>, <text>.
 6. For graphing functions emit a fenced functionplot block with this exact JSON schema:
    ```functionplot

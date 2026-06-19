@@ -96,7 +96,13 @@
 
     var mermaidDivs = div.querySelectorAll('.mermaid');
     if (mermaidDivs.length > 0) {
-      mermaid.run({ nodes: mermaidDivs });
+      mermaid.run({ nodes: mermaidDivs, suppressErrors: true }).catch(function() {}).then(function() {
+        mermaidDivs.forEach(function(d) {
+          if (!d.querySelector('svg')) {
+            d.innerHTML = '<span class="error-msg">[diagram syntax error]</span>';
+          }
+        });
+      });
     }
 
     var mathScope = {
