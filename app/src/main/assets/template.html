@@ -85,6 +85,8 @@
   var plotCount = 0;
   var paletteIdx = 0;
   var PALETTE = ['#FFAB40','#4FC3F7','#81C784','#F06292','#CE93D8','#FFD54F'];
+  var msgCount = 0;
+  var lastAssistantMsgId = null;
 
   // Compile a math expression string to a JS function, bypassing function-plot's parser.
   // Handles: ^ (power), pi, e, exp, sqrt, ln, log, sin, cos, tan, abs, and all Math.*
@@ -135,9 +137,18 @@
     return pts.length > 1 ? pts : null;
   }
 
+  function scrollToCurrentResponse() {
+    if (lastAssistantMsgId) {
+      var el = document.getElementById(lastAssistantMsgId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
   function _renderMessage(role, html) {
     var div = document.createElement('div');
     div.className = role;
+    div.id = 'msg-' + (++msgCount);
+    if (role === 'assistant') lastAssistantMsgId = div.id;
     div.innerHTML = html;
     document.getElementById('chat').appendChild(div);
 

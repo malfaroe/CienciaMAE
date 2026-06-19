@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -163,11 +164,20 @@ fun CienciaApp() {
                 Text(
                     "CIENCIAMAE",
                     modifier = Modifier.weight(1f),
-                    style = TextStyle(color = ComposeColor(0xFFFFAB40), fontFamily = mono, fontSize = 12.sp, letterSpacing = 2.sp)
+                    style = TextStyle(
+                        color = ComposeColor(0xFFFFAB40),
+                        fontFamily = mono,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 3.sp
+                    )
                 )
                 if (messages.isNotEmpty()) {
-                    TextButton(onClick = { webViewRef?.evaluateJavascript("window.scrollTo(0,0)", null) }) {
-                        Text("up", style = TextStyle(color = ComposeColor(0xFFFFAB40), fontFamily = mono, fontSize = 12.sp))
+                    TextButton(
+                        onClick = { webViewRef?.evaluateJavascript("scrollToCurrentResponse()", null) },
+                        modifier = Modifier.border(1.dp, ComposeColor(0xFFFFAB40), RoundedCornerShape(4.dp))
+                    ) {
+                        Text("UP", style = TextStyle(color = ComposeColor(0xFFFFAB40), fontFamily = mono, fontSize = 14.sp, fontWeight = FontWeight.Bold))
                     }
                 }
                 TextButton(onClick = { showKeyDialog = true }) {
