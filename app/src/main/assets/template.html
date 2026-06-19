@@ -98,9 +98,17 @@
       'log=Math.log10,ln=Math.log,log2=Math.log2,log10=Math.log10,' +
       'ceil=Math.ceil,floor=Math.floor,round=Math.round,' +
       'pow=Math.pow,sign=Math.sign,min=Math.min,max=Math.max;';
-    var jsExpr = fnStr.replace(/\^/g, '**');
+    // Fix unary minus before ^: -x^2 → -(x)^2, then ^ → **
+    // Without this, -x**2 is a JS SyntaxError (spec disallows unary - before **)
+    var jsExpr = fnStr
+      .replace(/-([A-Za-z_$][A-Za-z0-9_$]*|\d+\.?\d*)\^/g, '-($1)^')
+      .replace(/\^/g, '**');
     var f;
-    try { f = new Function('x', decls + 'return (' + jsExpr + ');'); } catch(e) { return null; }
+    try {
+      f = new Function('x', decls + 'return (' + jsExpr + ');');
+    } catch(e) {
+      return null;
+    }
     var x0 = xDomain[0], x1 = xDomain[1], step = (x1 - x0) / nPts;
     var pts = [];
     for (var i = 0; i <= nPts; i++) {
