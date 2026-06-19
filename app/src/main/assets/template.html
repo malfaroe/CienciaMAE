@@ -98,11 +98,28 @@
       'log=Math.log10,ln=Math.log,log2=Math.log2,log10=Math.log10,' +
       'ceil=Math.ceil,floor=Math.floor,round=Math.round,' +
       'pow=Math.pow,sign=Math.sign,min=Math.min,max=Math.max;';
-    // Fix unary minus before ^: -x^2 → -(x)^2, then ^ → **
-    // Without this, -x**2 is a JS SyntaxError (spec disallows unary - before **)
-    var jsExpr = fnStr
-      .replace(/-([A-Za-z_$][A-Za-z0-9_$]*|\d+\.?\d*)\^/g, '-($1)^')
-      .replace(/\^/g, '**');
+    // Convert ^ to Math.pow() to avoid JS SyntaxError.
+    // The ECMAScript spec forbids ANY UnaryExpression (e.g. -x, -(x), -(expr))
+    // as the left operand of **. The only safe fix is to avoid ** for negated bases.
+    // Strategy: replace identifier^exp and number^exp with Math.pow(a,b) in a loop
+    // (multiple passes handle nested ^). Remaining ^ (sin(x)^2, (a+b)^2) become **,
+    // which is valid since CallExpression and ParenthesizedExpression are legal left operands.
+    var jsExpr = fnStr;
+    for (var _i = 0; _i < 5; _i++) {
+      var _prev = jsExpr;
+      // -(paren)^exp → -(Math.pow(paren,exp))   e.g. -(x-mu)^2
+      jsExpr = jsExpr.replace(/-(\([^()^]*\))\^(\([^()^]*\)|[A-Za-z_$][A-Za-z0-9_$]*|\d+\.?\d*)/g,
+        '-(Math.pow($1,$2))');
+      // identifier^exp → Math.pow(id,exp)       e.g. x^2, e^x, sigma^2
+      jsExpr = jsExpr.replace(/([A-Za-z_$][A-Za-z0-9_$]*)\^(\([^()^]*\)|[A-Za-z_$][A-Za-z0-9_$]*|\d+\.?\d*)/g,
+        'Math.pow($1,$2)');
+      // number^exp → Math.pow(n,exp)             e.g. 2^n, 10^3
+      jsExpr = jsExpr.replace(/(\d+\.?\d*)\^(\([^()^]*\)|[A-Za-z_$][A-Za-z0-9_$]*|\d+\.?\d*)/g,
+        'Math.pow($1,$2)');
+      if (jsExpr === _prev) break;
+    }
+    // Any ^ remaining (e.g. sin(x)^2, (a+b)^2) → ** is valid (left side is Call/Paren expr)
+    jsExpr = jsExpr.replace(/\^/g, '**');
     var f;
     try {
       f = new Function('x', decls + 'return (' + jsExpr + ');');
@@ -162,6 +179,13 @@
               var pts = _sampleFn(datum.fn, xDom, 300);
               if (pts) {
                 datum.points = pts;
+                datum.fnType = 'points';
+                datum.graphType = 'polyline';
+                delete datum.fn;
+              } else {
+                // Sampler failed: force empty points so function-plot's unreliable
+                // parser never runs (it would fail on 'pi', 'e', etc.)
+                datum.points = [];
                 datum.fnType = 'points';
                 datum.graphType = 'polyline';
                 delete datum.fn;
