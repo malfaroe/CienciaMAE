@@ -14,8 +14,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -122,6 +124,7 @@ fun CienciaApp() {
     }
 
     val mono = FontFamily.Monospace
+    val focusManager = LocalFocusManager.current
 
     if (showKeyDialog) {
         ApiKeyDialog(mono) { key ->
@@ -152,23 +155,33 @@ fun CienciaApp() {
 
             HorizontalDivider(color = ComposeColor(0xFF1A1A1A), thickness = 0.5.dp)
 
-            AndroidView(
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                factory = { ctx ->
-                    WebView(ctx).apply {
-                        settings.javaScriptEnabled = true
-                        settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
-                        setBackgroundColor(Color.BLACK)
-                        webViewClient = object : WebViewClient() {
-                            override fun onPageFinished(view: WebView?, url: String?) {
-                                pageLoaded = true
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { ctx ->
+                        WebView(ctx).apply {
+                            settings.javaScriptEnabled = true
+                            settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+                            setBackgroundColor(Color.BLACK)
+                            webViewClient = object : WebViewClient() {
+                                override fun onPageFinished(view: WebView?, url: String?) {
+                                    pageLoaded = true
+                                }
                             }
+                            loadUrl("file:///android_asset/template.html")
+                            webViewRef = this
                         }
-                        loadUrl("file:///android_asset/template.html")
-                        webViewRef = this
+                    }
+                )
+                if (messages.isNotEmpty()) {
+                    TextButton(
+                        onClick = { webViewRef?.evaluateJavascript("window.scrollTo(0,0)", null) },
+                        modifier = Modifier.align(Alignment.TopEnd).padding(end = 4.dp, top = 2.dp)
+                    ) {
+                        Text("↑", style = TextStyle(color = ComposeColor(0xFF444444), fontFamily = mono, fontSize = 18.sp))
                     }
                 }
-            )
+            }
 
             error?.let { err ->
                 Text(
@@ -212,6 +225,7 @@ fun CienciaApp() {
                         if (inputText.isNotBlank() && !isLoading) {
                             sendMessage(context, vm, scope, apiKey, inputText) { showKeyDialog = true }
                             inputText = ""
+                            focusManager.clearFocus()
                         }
                     }),
                     maxLines = 4
@@ -221,6 +235,7 @@ fun CienciaApp() {
                         if (inputText.isNotBlank() && !isLoading) {
                             sendMessage(context, vm, scope, apiKey, inputText) { showKeyDialog = true }
                             inputText = ""
+                            focusManager.clearFocus()
                         }
                     },
                     enabled = !isLoading
