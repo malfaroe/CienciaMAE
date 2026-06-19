@@ -125,8 +125,9 @@
     });
 
     div.querySelectorAll('.mermaid').forEach(function(d) {
-      var src = d.textContent.trim();
+      var src = d.innerHTML.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').trim();
       mermaid.parse(src).then(function() {
+        d.textContent = src;
         mermaid.run({ nodes: [d], suppressErrors: true });
       }).catch(function() {
         d.innerHTML = '<span class="error-msg">[diagram syntax error]</span>';

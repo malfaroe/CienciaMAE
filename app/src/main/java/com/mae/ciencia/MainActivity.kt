@@ -75,32 +75,33 @@ fun htmlEscape(text: String): String = text
 fun processMarkdown(text: String): String {
     var result = text
 
-    // Extract $$ blocks before line-break processing so newlines inside LaTeX survive
+    // Extract $$ and mermaid blocks before line-break processing to preserve their newlines
     val mathBlocks = mutableListOf<String>()
     result = result.replace(Regex("\\$\\$[\\s\\S]*?\\$\\$")) { m ->
         mathBlocks.add(m.value)
         "MATHBLOCK${mathBlocks.size - 1}END"
     }
 
+    val mermaidBlocks = mutableListOf<String>()
     result = result.replace(Regex("```mermaid\\n([\\s\\S]*?)```\\n?")) { m ->
-        "<div class=\"mermaid\">${m.groupValues[1].trim()}</div>"
+        mermaidBlocks.add("<div class=\"mermaid\">${m.groupValues[1].trim()}</div>")
+        "MERMAIDBLOCK${mermaidBlocks.size - 1}END"
     }
 
     result = result.replace(Regex("```functionplot\\n([\\s\\S]*?)```\\n?")) { m ->
         "<div class=\"functionplot-data\">${m.groupValues[1].trim()}</div>"
     }
 
-    // Bullet points at line start
     result = result.replace(Regex("(?m)^[*-] (.+)"), "&#8226; $1")
-
     result = result.replace(Regex("\\*\\*([^*\n]+)\\*\\*"), "<strong>$1</strong>")
-
     result = "<p>" + result.replace("\n\n", "</p><p>") + "</p>"
     result = result.replace("\n", "<br>")
 
-    // Restore math blocks intact
     mathBlocks.forEachIndexed { idx, block ->
         result = result.replace("MATHBLOCK${idx}END", block)
+    }
+    mermaidBlocks.forEachIndexed { idx, block ->
+        result = result.replace("MERMAIDBLOCK${idx}END", block)
     }
 
     return result
